@@ -12,9 +12,14 @@
 #include <memory>
 
 //#include "opencv2/core.hpp"
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+
+namespace py = pybind11;
 
 #include "CNT_JSON.h"
 #include "Logger.h"
+#include "matrix.h"
 
 class ImgEngine {
 public:
@@ -30,7 +35,9 @@ public:
    virtual bool init(std::string config) = 0;
 
    //virtual bool next(cv::Mat& frame) = 0;
-   virtual bool next() = 0;
+   virtual bool next2() = 0;
+
+   virtual py::array_t<unsigned short> next() = 0;
 
    virtual int getImageSize() = 0;
 

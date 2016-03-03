@@ -9,7 +9,7 @@
 #include "Sim_ImgEngine.h"
 #include "ip_routines.h"
 
-#include "opencv2/core.hpp"
+//#include "matrix.h"
 
 Sim_ImgEngine::Sim_ImgEngine(std::string name, bool debug):
    ImgEngine(name, debug),
@@ -145,29 +145,56 @@ bool Sim_ImgEngine::setImageParams()
    return true;
 }
 
-bool Sim_ImgEngine::next()
+bool Sim_ImgEngine::next2()
 {
-   //frame = cv::Mat::ones(cv::Size(m_width_px, m_height_px), CV_16UC1)*8000;
 
-   // frame = cv::Mat(cv::Size(m_width_px, m_height_px), CV_16UC1);
-   // cv::randu(frame, cv::Scalar::all(0), cv::Scalar::all(16500));
-   //
-   // m_sim_drops_start += 50;
-   // if (m_sim_drops_start > m_height_px)
-   //    m_sim_drops_start = 0;
-   //
-   // std::vector<unsigned int> cols = { 1*(m_width_px/4),  2*(m_width_px/4),  3*(m_width_px/4) };
-   //
-   // for (int idx=0; idx<3; ++idx)
-   // {
-   //    int col = cols[idx];
-   //    int row = m_sim_drops_start + (idx*100);
-   //    cv::circle(frame, cv::Point(col, row), 30, gray, -1);
-   // }
+   m_Log->LogInfo("Next 2!!!");
 
-   usleep(100 * 1000);
 
-   return (true);
+   return true;
+}
+
+py::array_t<unsigned short> Sim_ImgEngine::next()
+{
+   int rows = {500};
+   int cols = {500};
+
+   //auto v = new Matrix(rows, cols);
+   ////memcpy(v.data(), info.ptr, sizeof(float) * v.rows() * v.cols())
+
+   m_Log->LogInfo("Inside next...rows=", rows, ", cols=", cols);
+
+   unsigned short* m_data = new unsigned short[rows*cols];
+   memset(m_data, 0, sizeof(unsigned short) * rows * cols);
+
+   m_Log->LogInfo("Alloc'd m_data");
+
+   py::array_t<unsigned short> nextImg =
+     py::array(py::buffer_info(
+      m_data,            /* Pointer to data (nullptr -> ask NumPy to allocate!) */
+      sizeof(unsigned short),     /* Size of one item */
+      py::format_descriptor<unsigned short>::value(), /* Buffer format */
+      2,          /* How many dimensions? */
+      { rows, cols },  /* Number of elements for each dimension */
+      { sizeof(unsigned short) * rows,            /* Strides (in bytes) for each index */
+              sizeof(unsigned short) }
+   ));
+
+   m_Log->LogInfo("Alloc'd nextImg");
+
+   auto buf3 = nextImg.request();
+   unsigned short *ptr3 = (unsigned short *) buf3.ptr;
+
+   m_Log->LogInfo("got buf3...shape: ", buf3.shape[0], "x", buf3.shape[1]);
+
+
+   m_Log->LogInfo("now some idxing...");
+
+   for (size_t idx = 0; idx < buf3.shape[0]; idx++)
+      ptr3[idx] = idx+1;
+
+   m_Log->LogInfo("returning...");
+   return nextImg;
 }
 
 int Sim_ImgEngine::getImageSize()

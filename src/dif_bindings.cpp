@@ -44,9 +44,17 @@ PYBIND11_PLUGIN(dif) {
             );
         }
 
-        bool next() {
+        bool next2() {
             PYBIND11_OVERLOAD_PURE(
                 bool, /* Return type */
+                ImgEngine,      /* Parent class */
+                next          /* Name of function */
+            );
+        }
+
+        py::array_t<unsigned short> next() {
+            PYBIND11_OVERLOAD_PURE(
+                py::array_t<unsigned short>, /* Return type */
                 ImgEngine,      /* Parent class */
                 next          /* Name of function */
             );
@@ -88,6 +96,7 @@ PYBIND11_PLUGIN(dif) {
              .alias<ImgEngine>()
              .def(py::init<const std::string &, bool>())
              .def("init", &ImgEngine::init)
+             .def("next2", &ImgEngine::next2)
              .def("next", &ImgEngine::next)
              .def("getPelSize_um", &ImgEngine::getPelSize_um)
              .def("getImageSize", &ImgEngine::getImageSize)
@@ -116,6 +125,7 @@ PYBIND11_PLUGIN(dif) {
    py::class_<Sim_ImgEngine> sim_ImgEngine(m, "Sim_ImgEngine", imgEngine);
    sim_ImgEngine.def(py::init<const std::string &, bool>())
                 .def("init", &Sim_ImgEngine::init)
+                .def("next2", &Sim_ImgEngine::next2)
                 .def("next", &Sim_ImgEngine::next)
                 .def("getName", &Sim_ImgEngine::getImageSize)
                 .def("cur_info", &Sim_ImgEngine::cur_info)

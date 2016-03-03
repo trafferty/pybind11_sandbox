@@ -29,7 +29,9 @@ public:
 
    bool init(std::string config);
 
-   bool next();
+   bool next2();
+
+   py::array_t<unsigned short> next();
 
    int getImageSize();
 
