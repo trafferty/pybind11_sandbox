@@ -19,21 +19,15 @@
 
 class Sim_ImgEngine: public ImgEngine {
 public:
-    enum Record_Mode_t
-    {
-       RECORD_MODE_OFF = 0, RECORD_MODE_ON
-    };
 
     Sim_ImgEngine(std::string name, bool debug = false);
    virtual ~Sim_ImgEngine();
 
-   bool init(std::string config);
-
-   bool next2();
+   bool init(const std::map<std::string, double> &config);
 
    py::array_t<unsigned short> next();
 
-   int getImageSize();
+   std::tuple<int, int> getImageSize();
 
    std::string cur_info();
 

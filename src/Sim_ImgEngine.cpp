@@ -41,99 +41,31 @@ Sim_ImgEngine::~Sim_ImgEngine()
    m_Log->LogDebug("Lostframe count: ", m_lostframes);
 }
 
-bool Sim_ImgEngine::init(std::string config)
+bool Sim_ImgEngine::init(const std::map<std::string, double> &config)
 {
-   // if (!getAttributeValue_Int(config, "device_num", m_device_num) )
-   // {
-   //     m_Log->LogError("Could not get device_num from config: ");
-   //     printJSON(config);
-   //     return false;
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "exposure_us", m_exposure_us) )
-   // {
-   //     m_Log->LogError("Could not get exposure_ms from config: ");
-   //     printJSON(config);
-   //     return false;
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "delay_us", m_delay_us) )
-   // {
-   //     m_Log->LogWarn("Could not get delay_us from config: ");
-   //     printJSON(config);
-   // }
-   //
-   // if (!getAttributeValue_Double(config, "conversion_factor", m_conversion_factor) )
-   // {
-   //     m_Log->LogWarn("Could not get conversion_factor from config: ");
-   //     printJSON(config);
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "height_px", (int&)m_height_px) )
-   // {
-   //     m_Log->LogError("Could not get height_px from config: ");
-   //     printJSON(config);
-   //     return false;
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "width_px", (int&)m_width_px) )
-   // {
-   //     m_Log->LogError("Could not get width_px from config: ");
-   //     printJSON(config);
-   //     return false;
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "offset_x_px", m_offset_x_px) )
-   // {
-   //     m_Log->LogError("Could not get offset_x_px from config: ");
-   //     printJSON(config);
-   //     return false;
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "offset_y_px", m_offset_y_px) )
-   // {
-   //     m_Log->LogError("Could not get offset_y_px from config: ");
-   //     printJSON(config);
-   //     return false;
-   // }
-   //
-   // if (!getAttributeValue_Double(config, "pel_size_um", m_pelSize) )
-   // {
-   //     m_Log->LogWarn("Could not get pel_size_um from config: ");
-   //     printJSON(config);
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "binh", m_binh) )
-   // {
-   //     m_Log->LogWarn("Could not get binh from config: ");
-   //     printJSON(config);
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "binv", m_binv) )
-   // {
-   //     m_Log->LogWarn("Could not get binv from config: ");
-   //     printJSON(config);
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "trigger_mode", m_trigger_mode) )
-   // {
-   //     m_Log->LogWarn("Could not get trigger_mode from config: ");
-   //     printJSON(config);
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "doubleImage_mode", m_doubleImage_mode ) )
-   // {
-   //     m_Log->LogWarn("Could not get doubleImage_mode from config: ");
-   //     printJSON(config);
-   // }
-   //
-   // if (!getAttributeValue_Int(config, "timestamp_mode", m_timestamp_mode ) )
-   // {
-   //     m_Log->LogWarn("Could not get timestamp_mode from config: ");
-   //     printJSON(config);
-   // }
-
-   m_Log->LogInfo("Sim driver loaded.  std::string config:", config);
+#if 0
+for (auto item : config)
+    std::cout << "key: " << item.first << ", value=" << item.second << std::endl;
+#else
+   try {
+      m_device_num = (int)config.at("device_num");
+      m_exposure_us = (int)config.at("exposure_us");
+      m_delay_us = (int)config.at("delay_us");
+      m_conversion_factor = config.at("conversion_factor");
+      m_height_px = (int)config.at("height_px");
+      m_width_px = (int)config.at("width_px");
+      m_pelSize = (int)config.at("pel_size_um");
+      m_binh = (int)config.at("binh");
+      m_binv = (int)config.at("binv");
+      m_trigger_mode = (int)config.at("trigger_mode");
+      m_doubleImage_mode = (int)config.at("doubleImage_mode");
+      m_timestamp_mode = (int)config.at("timestamp_mode");
+   }
+   catch (const std::out_of_range& oor) {
+       std::cerr << "Out of Range error: " << oor.what() << '\n';
+     }
+#endif
+   m_Log->LogInfo("Sim driver loaded. ");
    std::cerr << device_info();
 
    return true;
@@ -145,27 +77,19 @@ bool Sim_ImgEngine::setImageParams()
    return true;
 }
 
-bool Sim_ImgEngine::next2()
-{
-
-   m_Log->LogInfo("Next 2!!!");
-
-
-   return true;
-}
-
 py::array_t<unsigned short> Sim_ImgEngine::next()
 {
-   int rows = {500};
-   int cols = {500};
-
-   //auto v = new Matrix(rows, cols);
-   ////memcpy(v.data(), info.ptr, sizeof(float) * v.rows() * v.cols())
+   int rows = m_height_px;
+   int cols = m_width_px;
 
    m_Log->LogInfo("Inside next...rows=", rows, ", cols=", cols);
 
    unsigned short* m_data = new unsigned short[rows*cols];
    memset(m_data, 0, sizeof(unsigned short) * rows * cols);
+
+   unsigned short t=rows;
+   for (size_t idx = (rows * cols) - cols; idx < (rows * cols); t--, idx++)
+      m_data[idx] = t;
 
    m_Log->LogInfo("Alloc'd m_data");
 
@@ -186,8 +110,6 @@ py::array_t<unsigned short> Sim_ImgEngine::next()
    unsigned short *ptr3 = (unsigned short *) buf3.ptr;
 
    m_Log->LogInfo("got buf3...shape: ", buf3.shape[0], "x", buf3.shape[1]);
-
-
    m_Log->LogInfo("now some idxing...");
 
    for (size_t idx = 0; idx < buf3.shape[0]; idx++)
@@ -197,9 +119,9 @@ py::array_t<unsigned short> Sim_ImgEngine::next()
    return nextImg;
 }
 
-int Sim_ImgEngine::getImageSize()
+std::tuple<int, int> Sim_ImgEngine::getImageSize()
 {
-   return 5;
+   return std::make_tuple(m_width_px, m_height_px);
 }
 
 std::string Sim_ImgEngine::cur_info()

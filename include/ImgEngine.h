@@ -27,19 +27,22 @@ public:
    {
        COLOR_MODE_DEFAULT = 0, COLOR_MODE_RGB, COLOR_MODE_MONO, COLOR_MODE_RAW8
    };
+   enum Record_Mode_t
+   {
+      RECORD_MODE_OFF = 0, RECORD_MODE_ON
+   };
 
    ImgEngine(std::string name, bool debug = false);
    virtual ~ImgEngine();
 
    //virtual bool init(cJSON* config) = 0;
-   virtual bool init(std::string config) = 0;
+   virtual bool init(const std::map<std::string, double> &config) = 0;
 
    //virtual bool next(cv::Mat& frame) = 0;
-   virtual bool next2() = 0;
 
    virtual py::array_t<unsigned short> next() = 0;
 
-   virtual int getImageSize() = 0;
+   virtual std::tuple<int, int> getImageSize();
 
    virtual std::string cur_info() = 0;
 
@@ -53,6 +56,8 @@ public:
    virtual bool reset(ColorMode_t colorMode);
 
    uint img_idx;
+
+   std::string getName();
 
 protected:
     bool m_Debug;

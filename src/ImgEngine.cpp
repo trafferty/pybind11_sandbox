@@ -26,6 +26,12 @@ double ImgEngine::getPelSize_um()
    return m_pelSize;
 }
 
+std::tuple<int, int> ImgEngine::getImageSize()
+{
+   return std::make_tuple(0,0);
+}
+
+
 void ImgEngine::setColorMode(ColorMode_t colorMode)
 {
    m_colorMode = colorMode;
@@ -40,4 +46,9 @@ bool ImgEngine::reset(ColorMode_t colorMode)
 {
    m_colorMode = colorMode;
    return true;
+}
+
+std::string ImgEngine::getName()
+{
+   return m_Name;
 }

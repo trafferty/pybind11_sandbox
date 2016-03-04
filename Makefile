@@ -29,11 +29,26 @@ PYTHON_LDFLAGS=$(shell python3-config --ldflags --libs)
 
 UTIL_DIR=/home/trafferty/dev/src/ipHost/util
 
-AUXIL=./auxil
+# AUXIL=./auxil
+AUXIL=/home/trafferty/dev/src/ipHost/dif/auxil
+SPINAPI_BASE=$(AUXIL)/spincore
+PCO_BASE=$(AUXIL)/pco
+
+SPINAPI_CFLAGS=-I$(SPINAPI_BASE)/include
+SPINAPI_LDFLAGS=-L$(SPINAPI_BASE)/lib -lspinapi -lm -ldl -lusb -lpthread -lrt
+
+
+
 PYBIND11_BASE=../pybind11
 
 PYBIND11_CFLAGS=-I$(PYBIND11_BASE)/include $(PYTHON_CFLAGS)
 PYBIND11_LDFLAGS=$(PYTHON_LDFLAGS)
+
+PCO_CFLAGS=-I$(PCO_BASE)/pco_include -I$(PCO_BASE)/pco_classes -I$(PCO_BASE)/libusb_include
+#PCO_LDFLAGS=-L$(PCO_BASE)/pco_lib -lpcocam_usb -lpcocom_usb -lpcocnv -lpcofile -lpcodisp  -L$(PCO_BASE)/libusb_lib -lusb-1.0 -ludev -lrt
+PCO_LDFLAGS=-L$(PCO_BASE)/pco_lib -lpcocam_usb -lpcofile -lpcodisp -L/lib -lusb-1.0 -lX11 -lXext -ludev -lpthread -lrt
+
+LIBUSB_LIB = $(PCO_BASE)/libusb_lib/libusb-1.0.a
 
 INCLUDES=\
 	-I./include \
@@ -45,7 +60,8 @@ UTIL_OBJS = \
 
 DRIVERS = \
     src/.obj/ImgEngine.o \
-    src/.obj/Sim_ImgEngine.o
+	 src/.obj/Sim_ImgEngine.o \
+	 src/.obj/PCO_ImgEngine.o
 
 all: \
 	src/.obj \
@@ -77,8 +93,11 @@ src/.obj/ImgEngine.o: src/ImgEngine.cpp include/ImgEngine.h
 src/.obj/Sim_ImgEngine.o: src/Sim_ImgEngine.cpp include/Sim_ImgEngine.h
 	$(CPP) -c $< -o $@ $(CFLAGS) $(INCLUDES) $(PYBIND11_CFLAGS)
 
-dif.so: src/dif_bindings.cpp
-	$(LD) $(CFLAGS) -shared $(INCLUDES) $(PYBIND11_CFLAGS) $(PYTHON_LDFLAGS) $(DRIVERS) $< -o $@
+src/.obj/PCO_ImgEngine.o: src/PCO_ImgEngine.cpp include/PCO_ImgEngine.h
+	$(CPP) -c $< -o $@ $(CFLAGS) $(INCLUDES) $(PCO_CFLAGS) $(PYBIND11_CFLAGS)
+
+dif.so: src/dif_bindings.cpp $(DRIVERS)
+	$(CPP) $(CFLAGS) -shared $(INCLUDES) $(PYBIND11_CFLAGS) $(PCO_CFLAGS) $(PYTHON_LDFLAGS) $(DRIVERS) $(PCO_LDFLAGS) $< -o $@
 
 #
 # g++ -O3 -shared -fpic -std=c++11 -I./include -I/home/trafferty/dev/src/ipHost/util  -I../pybind11/include -I/usr/include/python3.4m -I/usr/include/python3.4m  -Wno-unused-result -g -fstack-protector --param=ssp-buffer-size=4
